@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
@@ -18,7 +17,6 @@ type todoCreatePayload struct {
 func (app *application) getTodosHandler(c *gin.Context) {
 	todos, err := app.store.Todos.GetTodos(c.Request.Context())
 	if err != nil {
-		log.Println(err)
 		app.internalServerError(c)
 		return
 	}
