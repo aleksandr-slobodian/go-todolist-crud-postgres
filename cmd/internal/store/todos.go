@@ -1,0 +1,169 @@
+package store
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	_ "github.com/lib/pq"
+)
+
+type Todo struct {
+	ID        int64     `json:"id"`
+	Item     	string    `json:"item"`
+	Completed bool   		`json:"completed"`
+	CreatedAt string    `json:"created_at"`
+	UpdatedAt string    `json:"updated_at"`
+	// UserID    int64     `json:"user_id"`
+}
+
+type 	TodoStore struct {
+	db *sql.DB
+}
+
+func (s *TodoStore) Create(ctx context.Context, todo *Todo) error {
+	query := `
+		INSERT INTO todos (item, completed)
+		VALUES ($1, $2) RETURNING id, item, completed, created_at, updated_at
+	`
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		todo.Item,
+		todo.Completed,
+	).Scan(
+		&todo.ID,
+		&todo.Item,
+		&todo.Completed,
+		&todo.CreatedAt,
+		&todo.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *TodoStore) Update(ctx context.Context, todo *Todo) error {
+	query := `
+		UPDATE todos
+		SET item = $1, completed = $2, updated_at = NOW()
+		WHERE id = $3
+		RETURNING id, item, completed, created_at, updated_at
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		todo.Item,
+		todo.Completed,
+		todo.ID,
+	).Scan(
+		&todo.ID, 
+		&todo.Item, 
+		&todo.Completed, 
+		&todo.CreatedAt, 
+		&todo.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrNotFound
+		default:
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *TodoStore) Delete(ctx context.Context, todoID int64) error {
+	query := `DELETE FROM todos WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	res, err := s.db.ExecContext(ctx, query, todoID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func (s *TodoStore) GetByID(ctx context.Context, id int64) (*Todo, error) {
+	query := `
+		SELECT id, item, completed, created_at, updated_at
+		FROM todos
+		WHERE id = $1
+	`
+	todo := Todo{}
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		id,
+	).Scan(
+		&todo.ID,
+		&todo.Item,
+		&todo.Completed,
+		&todo.CreatedAt,
+		&todo.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &todo, nil
+}
+
+func (s *TodoStore) GetTodos(ctx context.Context) ([]*Todo, error) {
+	query := `
+		SELECT id, item, completed, created_at, updated_at
+		FROM todos
+		ORDER BY created_at DESC
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	todos := make([]*Todo, 0)
+
+	for rows.Next() {
+		todo := &Todo{}
+		if err := rows.Scan(
+			&todo.ID,
+			&todo.Item,
+			&todo.Completed,
+			&todo.CreatedAt,
+			&todo.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
