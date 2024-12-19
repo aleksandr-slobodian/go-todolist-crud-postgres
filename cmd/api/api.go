@@ -17,15 +17,21 @@ func (app *application) mount() http.Handler {
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/health", app.healthCheckHandler)
-		v1.GET("/todos", app.getTodosHandler)
-		v1.POST("/todos", app.createTodoHandler)
 
-		todo := v1.Group("/todos/:id")
-		todo.Use(app.todoContextMiddleware())
-
-		todo.GET("", app.getTodoHandler)
-		todo.PATCH("", app.updateTodoHandler)
-		todo.DELETE("", app.deleteTodoHandler)
+		todos := v1.Group("/todos") 
+		{
+			todos.GET("", app.getTodosHandler)
+			todos.POST("", app.createTodoHandler)
+	
+			todo := todos.Group("/:id")
+			{
+				todo.Use(app.todoContextMiddleware())
+		
+				todo.GET("", app.getTodoHandler)
+				todo.PATCH("", app.updateTodoHandler)
+				todo.DELETE("", app.deleteTodoHandler)
+			}
+		}
 	}
 
 	return r
