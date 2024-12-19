@@ -49,8 +49,8 @@ func (app *application) createTodoHandler(c *gin.Context) {
 }
 
 type todoUpdatePayload struct {
-	Item      string `json:"item" binding:"omitempty,max=100,min=2"`
-	Completed bool   `json:"completed"`
+	Item      *string `json:"item" binding:"omitempty,max=100,min=2"`
+	Completed *bool   `json:"completed" binding:"omitempty"`
 }
 
 func (app *application) updateTodoHandler(c *gin.Context) {
@@ -64,12 +64,12 @@ func (app *application) updateTodoHandler(c *gin.Context) {
 		return
 	}
 
-	if payload.Item != "" && todo.Item != payload.Item {
-		todo.Item = payload.Item
+	if payload.Item != nil{
+		todo.Item = *payload.Item
 	}
 	
-	if todo.Completed != payload.Completed {
-		todo.Completed = payload.Completed
+	if payload.Completed != nil {
+		todo.Completed = *payload.Completed
 	}
 
 	ctx := c.Request.Context()
