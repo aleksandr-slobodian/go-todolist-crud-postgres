@@ -13,6 +13,14 @@ import (
 func Seed(store store.Storage, db *sql.DB) {
 	ctx := context.Background()
 
+	users := generateUsers(3)
+
+	for _, user := range users {		
+		if err := store.Users.Create(ctx, user); err != nil {
+			log.Panic(err)
+		}
+	}
+
 	todos := generateTodos(10)
 
 	for _, todo := range todos {		
@@ -31,4 +39,16 @@ func generateTodos(num int) []*store.Todo {
 		}
 	}
 	return todos
+}
+
+func generateUsers(num int) []*store.User {
+	users := make([]*store.User, num)
+	for i := 0; i < num; i++ {
+		users[i] = &store.User{
+			Username: faker.Username(),
+			Email: faker.Email(),
+			Password: faker.Password(),
+		}
+	}
+	return users
 }
