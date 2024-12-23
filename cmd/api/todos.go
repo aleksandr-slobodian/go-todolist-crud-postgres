@@ -36,6 +36,8 @@ func (app *application) createTodoHandler(c *gin.Context) {
 	todo := &store.Todo{
 		Item: payload.Item,
 		Completed: payload.Completed,
+		// TODO: get user id from token
+		UserID: 1,
 	}
 
 	ctx := c.Request.Context()

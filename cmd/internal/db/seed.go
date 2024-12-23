@@ -21,7 +21,7 @@ func Seed(store store.Storage, db *sql.DB) {
 		}
 	}
 
-	todos := generateTodos(10)
+	todos := generateTodos(10, users)
 
 	for _, todo := range todos {		
 		if err := store.Todos.Create(ctx, todo); err != nil {
@@ -30,10 +30,12 @@ func Seed(store store.Storage, db *sql.DB) {
 	}
 }
 
-func generateTodos(num int) []*store.Todo {
+func generateTodos(num int, users []*store.User) []*store.Todo {
 	todos := make([]*store.Todo, num)
 	for i := 0; i < num; i++ {
+		user := users[rand.Intn(len(users))]
 		todos[i] = &store.Todo{
+			UserID: user.ID,
 			Item:     faker.Sentence(),
 			Completed: rand.Intn(2) == 0,
 		}

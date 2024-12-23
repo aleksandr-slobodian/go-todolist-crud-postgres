@@ -8,13 +8,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
 type Todo struct {
 	ID        int64     `json:"id"`
 	Item     	string    `json:"item"`
 	Completed bool   		`json:"completed"`
 	CreatedAt string    `json:"created_at"`
 	UpdatedAt string    `json:"updated_at"`
-	// UserID    int64     `json:"user_id"`
+	UserID    int64     `json:"user_id"`
 }
 
 type 	TodoStore struct {
@@ -23,20 +24,20 @@ type 	TodoStore struct {
 
 func (s *TodoStore) Create(ctx context.Context, todo *Todo) error {
 	query := `
-		INSERT INTO todos (item, completed)
-		VALUES ($1, $2) RETURNING id, item, completed, created_at, updated_at
+		INSERT INTO todos (item, completed, user_id)
+		VALUES ($1, $2, $3) RETURNING id, item, completed, created_at
 	`
 	err := s.db.QueryRowContext(
 		ctx,
 		query,
 		todo.Item,
 		todo.Completed,
+		todo.UserID,
 	).Scan(
 		&todo.ID,
 		&todo.Item,
 		&todo.Completed,
 		&todo.CreatedAt,
-		&todo.UpdatedAt,
 	)
 	if err != nil {
 		return err
@@ -49,7 +50,7 @@ func (s *TodoStore) Update(ctx context.Context, todo *Todo) error {
 		UPDATE todos
 		SET item = $1, completed = $2, updated_at = NOW()
 		WHERE id = $3
-		RETURNING id, item, completed, created_at, updated_at
+		RETURNING item, completed, updated_at
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -61,10 +62,8 @@ func (s *TodoStore) Update(ctx context.Context, todo *Todo) error {
 		todo.Completed,
 		todo.ID,
 	).Scan(
-		&todo.ID, 
 		&todo.Item, 
 		&todo.Completed, 
-		&todo.CreatedAt, 
 		&todo.UpdatedAt,
 	)
 	if err != nil {
@@ -103,7 +102,7 @@ func (s *TodoStore) Delete(ctx context.Context, todoID int64) error {
 
 func (s *TodoStore) GetByID(ctx context.Context, id int64) (*Todo, error) {
 	query := `
-		SELECT id, item, completed, created_at, updated_at
+		SELECT id, item, completed, created_at, updated_at, user_id
 		FROM todos
 		WHERE id = $1
 	`
@@ -118,6 +117,7 @@ func (s *TodoStore) GetByID(ctx context.Context, id int64) (*Todo, error) {
 		&todo.Completed,
 		&todo.CreatedAt,
 		&todo.UpdatedAt,
+		&todo.UserID,
 	)
 	if err != nil {
 		switch {
@@ -132,7 +132,7 @@ func (s *TodoStore) GetByID(ctx context.Context, id int64) (*Todo, error) {
 
 func (s *TodoStore) GetTodos(ctx context.Context) ([]*Todo, error) {
 	query := `
-		SELECT id, item, completed, created_at, updated_at
+		SELECT id, item, completed, created_at, updated_at, user_id
 		FROM todos
 		ORDER BY created_at DESC
 	`
@@ -155,6 +155,7 @@ func (s *TodoStore) GetTodos(ctx context.Context) ([]*Todo, error) {
 			&todo.Completed,
 			&todo.CreatedAt,
 			&todo.UpdatedAt,
+			&todo.UserID,
 		); err != nil {
 			return nil, err
 		}
