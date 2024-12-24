@@ -14,6 +14,9 @@ var (
 )
 
 type Storage struct {
+	Users interface{
+		Create(context.Context, *User) error
+	}
 	Todos interface{
 		GetByID(context.Context, int64) (*Todo, error)
 		Create(context.Context, *Todo) error
@@ -26,6 +29,7 @@ type Storage struct {
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
+		Users: &UserStore{db},
 		Todos: &TodoStore{db},
 	}
 }
