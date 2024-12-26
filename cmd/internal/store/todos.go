@@ -18,6 +18,12 @@ type Todo struct {
 	UserID    int64     `json:"user_id"`
 }
 
+type TodosQueryParams struct {
+	Limit int `form:"limit" binding:"gte=1,lte=100"`
+	Offset int `form:"offset" binding:"omitempty,gte=0"`
+	Order string `form:"order" binding:"omitempty,oneof=asc desc"`
+}
+
 type 	TodoStore struct {
 	db *sql.DB
 }
@@ -130,16 +136,18 @@ func (s *TodoStore) GetByID(ctx context.Context, id int64) (*Todo, error) {
 	return &todo, nil
 }
 
-func (s *TodoStore) GetTodos(ctx context.Context) ([]*Todo, error) {
+func (s *TodoStore) GetTodos(ctx context.Context, qparams TodosQueryParams) ([]*Todo, error) {
 	query := `
 		SELECT id, item, completed, created_at, updated_at, user_id
 		FROM todos
-		ORDER BY created_at DESC
+		ORDER BY created_at ` + sortOrder(qparams.Order) + `, item ASC
+		LIMIT $1
+		OFFSET $2
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query)
+	rows, err := s.db.QueryContext(ctx, query, qparams.Limit, qparams.Offset)
 	if err != nil {
 		return nil, err
 	}
