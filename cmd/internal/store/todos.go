@@ -22,6 +22,7 @@ type TodosQueryParams struct {
 	Limit int `form:"limit" binding:"gte=1,lte=100"`
 	Offset int `form:"offset" binding:"omitempty,gte=0"`
 	Order string `form:"order" binding:"omitempty,oneof=asc desc"`
+	Search string `form:"search" binding:"omitempty,max=100"`
 }
 
 type 	TodoStore struct {
@@ -140,6 +141,7 @@ func (s *TodoStore) GetTodos(ctx context.Context, qparams TodosQueryParams) ([]*
 	query := `
 		SELECT id, item, completed, created_at, updated_at, user_id
 		FROM todos
+		WHERE item ILIKE '%' || $3 || '%'
 		ORDER BY created_at ` + sortOrder(qparams.Order) + `, item ASC
 		LIMIT $1
 		OFFSET $2
@@ -147,7 +149,7 @@ func (s *TodoStore) GetTodos(ctx context.Context, qparams TodosQueryParams) ([]*
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query, qparams.Limit, qparams.Offset)
+	rows, err := s.db.QueryContext(ctx, query, qparams.Limit, qparams.Offset, qparams.Search)
 	if err != nil {
 		return nil, err
 	}
