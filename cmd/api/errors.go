@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
 	"github.com/gin-gonic/gin"
@@ -97,11 +98,12 @@ func (app *application) rateLimitExceededResponse(c *gin.Context, retryAfter str
 }
 
 func (app *application) parseValidationError(err error, errType string) error {
+
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		var result string
 		for _, fieldError := range validationErrors {
 			result += fmt.Sprintf(
-				"%s validation for '%s' failed: '%s' (condition: %s)",
+				"%s validation failed, '%s': '%s', (condition: %s)",
 				errType,
 				fieldError.Field(),
 				fieldError.ActualTag(),
@@ -110,7 +112,14 @@ func (app *application) parseValidationError(err error, errType string) error {
 		}
 		return errors.New(result)
 	}
-	return errors.New("an unknown validation error occurred")
+	if numError, ok := err.(*strconv.NumError); ok {
+		return fmt.Errorf(
+			"%s validation failed, '%s' is not a valid number",
+			errType,
+			numError.Num,
+		)
+	}
+	return fmt.Errorf("an unknown validation error occurred")
 }
 
 func (app *application) shouldBindJSON(c *gin.Context, payload interface{}) error {
@@ -124,7 +133,7 @@ func (app *application) shouldBindJSON(c *gin.Context, payload interface{}) erro
 		if errors.Is(err, io.EOF) {
 			return errors.New("request body is empty")
 		}
-		return app.parseValidationError(err, "field")
+		return app.parseValidationError(err, "json param")
 	}
 
 	return nil
@@ -132,7 +141,14 @@ func (app *application) shouldBindJSON(c *gin.Context, payload interface{}) erro
 
 func (app *application) shouldBindUri(c *gin.Context, payload interface{}) error {
 	if err := c.ShouldBindUri(payload); err != nil {
-		return app.parseValidationError(err, "param");
+		return app.parseValidationError(err, "query param");
+	}
+	return nil
+}
+
+func (app *application) shouldBindQuery(c *gin.Context, payload interface{}) error {
+	if err := c.ShouldBindQuery(payload); err != nil {
+		return app.parseValidationError(err, "query string");
 	}
 	return nil
 }

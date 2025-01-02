@@ -15,7 +15,18 @@ type todoCreatePayload struct {
 }
 
 func (app *application) getTodosHandler(c *gin.Context) {
-	todos, err := app.store.Todos.GetTodos(c.Request.Context())
+
+	payload := store.TodosQueryParams{
+		Limit: 10, 
+		Order: "desc",
+	}
+
+	if err := app.shouldBindQuery(c, &payload); err != nil {
+		app.badRequestResponse(c, err)
+		return
+	}
+
+	todos, err := app.store.Todos.GetTodos(c.Request.Context(), payload)
 	if err != nil {
 		app.internalServerError(c)
 		return

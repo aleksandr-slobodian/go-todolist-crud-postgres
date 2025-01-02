@@ -22,7 +22,7 @@ type Storage struct {
 		Create(context.Context, *Todo) error
 		Update(context.Context, *Todo) error
 		Delete(context.Context, int64) error
-		GetTodos(context.Context) ([]*Todo, error)
+		GetTodos(context.Context, TodosQueryParams) ([]*Todo, error)
 	}
 
 }

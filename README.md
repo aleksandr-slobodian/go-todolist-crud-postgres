@@ -77,6 +77,19 @@ This is a simple CRUD (Create, Read, Update, Delete) application built in Go usi
    curl http://localhost:8181/todos
    ```
 
+   You can use the following query parameters to customize the response:
+
+   - `limit` (optional): The number of todos to retrieve. Must be between 1 and 100.
+   - `offset` (optional): The index to start retrieving todos from. Must be greater than or equal to 0.
+   - `order` (optional): The order of the results. Can be either `asc` (ascending) or `desc` (descending).
+   - `search` (optional): A string to search in todo titles. Maximum length is 100 characters.
+
+   Example:
+
+   ```bash
+   curl "http://localhost:8181/todos?limit=10&offset=0&order=asc&search=meeting"
+   ```
+
 3. **Retrieve a specific todo**:
 
    ```bash
