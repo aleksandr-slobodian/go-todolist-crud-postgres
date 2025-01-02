@@ -6,7 +6,7 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/store"
 	"github.com/go-faker/faker/v4"
 )
 

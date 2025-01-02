@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/db"
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/env"
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/db"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/env"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/store"
 )
 
 type application struct {
@@ -27,6 +27,23 @@ type dbConfig struct {
 	maxIdleTime string
 }
 
+//	@title			Go Todo List CRUD Application
+//	@description	This is a sample api for todo list application
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@BasePath					/v1
+//
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
+//	@description
 func main() {
 	
 	cfg := config{

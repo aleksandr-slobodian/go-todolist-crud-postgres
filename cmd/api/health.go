@@ -4,26 +4,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HealthData struct {
+type healthCheckResponse struct {
 	Status  string `json:"status"` 
 	Env     string `json:"env"`     
 	Version string `json:"version"` 
 }
 
-type HealthResponse struct {
-	Data HealthData `json:"data"`
-}
 
-// healthCheckHandler godoc
+// healthcheckHandler godoc
 //
-//	@Summary		Healthcheck
-//	@Description	Provides a health check endpoint to verify the application's status.
-//	@Tags			ops
+//	@Summary		Health Check
+//	@Description	Returns the health status, environment, and version of the application.
+//	@Accept			json
+//	@Tags			Health
 //	@Produce		json
-//	@Success		200	{object}	HealthResponse	"JSON object with health status"
+//	@Success		200	{object}	jsonResponseEnvelope{data=healthCheckResponse}
+//	@Failure		500	{object}	jsonErrorResponseEnvelope
 //	@Router			/health [get]
 func (app *application) healthCheckHandler(c *gin.Context) {
-	app.jsonOkResponse(c, HealthData{
+	app.jsonOkResponse(c, healthCheckResponse{
 		Status:  "ok",
 		Env:     app.config.env,
 		Version: app.config.version,
