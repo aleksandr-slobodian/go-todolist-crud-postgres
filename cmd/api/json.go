@@ -6,12 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type jsonResponseEnvelope struct {
+	Data any `json:"data"`
+}
 func (app *application) jsonResponse(c *gin.Context, status int, data any) {
-	type envelope struct {
-		Data any `json:"data"`
-	}
-
-	c.JSON(status, envelope{Data: data})
+	c.JSON(status, jsonResponseEnvelope{Data: data})
 }
 
 func (app *application) jsonOkResponse(c *gin.Context, data any) {

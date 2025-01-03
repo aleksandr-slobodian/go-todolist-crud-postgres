@@ -1,0 +1,282 @@
+basePath: /v1
+definitions:
+  main.healthCheckResponse:
+    properties:
+      env:
+        type: string
+      status:
+        type: string
+      version:
+        type: string
+    type: object
+  main.jsonErrorResponseEnvelope:
+    properties:
+      error:
+        type: string
+    type: object
+  main.jsonResponseEnvelope:
+    properties:
+      data: {}
+    type: object
+  main.todoCreatePayload:
+    properties:
+      completed:
+        type: boolean
+      item:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - item
+    type: object
+  main.todoUpdatePayload:
+    properties:
+      completed:
+        type: boolean
+      item:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  store.Todo:
+    properties:
+      completed:
+        type: boolean
+      created_at:
+        type: string
+      id:
+        type: integer
+      item:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: This is a sample api for todo list application
+  title: Go Todo List CRUD Application
+paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status, environment, and version of the application.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/main.jsonResponseEnvelope'
+            - properties:
+                data:
+                  $ref: '#/definitions/main.healthCheckResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+      summary: Health Check
+      tags:
+      - Health
+  /todos:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of todos based on query parameters such as limit,
+        offset, order, and search.
+      parameters:
+      - default: 10
+        description: 'Number of todos to return (min: 1, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 'Number of todos to skip (min: 0)'
+        in: query
+        name: offset
+        type: integer
+      - default: desc
+        description: Order of the todos (asc or desc)
+        in: query
+        name: order
+        type: string
+      - description: 'Search term to filter todos by title or description (max length:
+          100)'
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/main.jsonResponseEnvelope'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/store.Todo'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+      summary: Get Todos
+      tags:
+      - Todos
+    post:
+      consumes:
+      - application/json
+      description: Creates a new todo item.
+      parameters:
+      - description: Todo item to be created
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.todoCreatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/main.jsonResponseEnvelope'
+            - properties:
+                data:
+                  $ref: '#/definitions/store.Todo'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+      summary: Create Todo
+      tags:
+      - Todos
+  /todos/{id}:
+    delete:
+      description: Deletes a todo item by its ID.
+      parameters:
+      - description: ID of the todo to delete
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/main.jsonResponseEnvelope'
+            - properties:
+                data:
+                  $ref: '#/definitions/store.Todo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+      summary: Delete Todo
+      tags:
+      - Todos
+    get:
+      description: Returns a todo item by its ID.
+      parameters:
+      - description: ID of the todo to retrieve
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/main.jsonResponseEnvelope'
+            - properties:
+                data:
+                  $ref: '#/definitions/store.Todo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+      summary: Get Todo
+      tags:
+      - Todos
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing todo item by its ID.
+      parameters:
+      - description: ID of the todo to update
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Todo update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.todoUpdatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/main.jsonResponseEnvelope'
+            - properties:
+                data:
+                  $ref: '#/definitions/store.Todo'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.jsonErrorResponseEnvelope'
+      summary: Update Todo
+      tags:
+      - Todos
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

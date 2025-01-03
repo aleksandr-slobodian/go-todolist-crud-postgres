@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/db"
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/env"
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/db"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/env"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/store"
 )
 
 type application struct {
@@ -16,6 +16,7 @@ type application struct {
 type config struct {
 	version string
 	addr string
+	apiURL string
 	db dbConfig
 	env string
 }
@@ -27,11 +28,20 @@ type dbConfig struct {
 	maxIdleTime string
 }
 
+//	@title						Go Todo List CRUD Application
+//	@description				This is a sample api for todo list application
+//	@BasePath					/v1
+//
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
+//	@description
 func main() {
 	
 	cfg := config{
 		version: env.GetString("VERSION", "0.0.0"),
 		addr: env.GetString("ADDR", ":8181"),
+		apiURL: env.GetString("EXTERNAL_URL", "localhost:8181"),
 		db: dbConfig{
 			addr: env.GetString("DB_ADDR", ""),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),

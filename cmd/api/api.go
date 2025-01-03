@@ -5,17 +5,25 @@ import (
 	"net/http"
 	"time"
 
+	docs "github.com/aleksandr-slobodian/go-todolist-crud-postgres/docs"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/gin-gonic/gin"
 )
 
 func (app *application) mount() http.Handler {
 	r := gin.New()
+	docs.SwaggerInfo.Version = app.config.version
+	docs.SwaggerInfo.Host = app.config.apiURL
+	docs.SwaggerInfo.BasePath = "/v1"
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(app.errorHandler())
 
 	v1 := r.Group("/v1")
 	{
+		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 		v1.GET("/health", app.healthCheckHandler)
 
 		todos := v1.Group("/todos") 
