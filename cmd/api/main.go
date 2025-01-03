@@ -16,6 +16,7 @@ type application struct {
 type config struct {
 	version string
 	addr string
+	apiURL string
 	db dbConfig
 	env string
 }
@@ -27,17 +28,8 @@ type dbConfig struct {
 	maxIdleTime string
 }
 
-//	@title			Go Todo List CRUD Application
-//	@description	This is a sample api for todo list application
-//	@termsOfService	http://swagger.io/terms/
-
-//	@contact.name	API Support
-//	@contact.url	http://www.swagger.io/support
-//	@contact.email	support@swagger.io
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
+//	@title						Go Todo List CRUD Application
+//	@description				This is a sample api for todo list application
 //	@BasePath					/v1
 //
 //	@securityDefinitions.apikey	ApiKeyAuth
@@ -49,6 +41,7 @@ func main() {
 	cfg := config{
 		version: env.GetString("VERSION", "0.0.0"),
 		addr: env.GetString("ADDR", ":8181"),
+		apiURL: env.GetString("EXTERNAL_URL", "localhost:8181"),
 		db: dbConfig{
 			addr: env.GetString("DB_ADDR", ""),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),

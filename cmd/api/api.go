@@ -15,7 +15,7 @@ import (
 func (app *application) mount() http.Handler {
 	r := gin.New()
 	docs.SwaggerInfo.Version = app.config.version
-	docs.SwaggerInfo.Host = app.config.addr
+	docs.SwaggerInfo.Host = app.config.apiURL
 	docs.SwaggerInfo.BasePath = "/v1"
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
