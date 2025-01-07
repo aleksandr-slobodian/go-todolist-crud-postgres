@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -21,16 +21,21 @@ type AppError struct {
 func (e *AppError) Error() string {
 	return e.Message
 }
-
+type jsonErrorResponseEnvelope struct {
+	Error string `json:"error"`
+}
 func (app *application) errorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
 		if len(c.Errors) > 0 {
+			err := jsonErrorResponseEnvelope{
+				Error: c.Errors.Last().Error(),
+			}
 			if appErr, ok := c.Errors.Last().Err.(*AppError); ok {
-					c.JSON(appErr.Code, c.Errors.Last())
+					c.JSON(appErr.Code, err)
 			} else {
-				c.JSON(http.StatusInternalServerError, c.Errors.Last())
+				c.JSON(http.StatusInternalServerError, err)
 			}
 				// TODO: Implement logger
 			r := c.Request

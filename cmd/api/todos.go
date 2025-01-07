@@ -3,7 +3,7 @@ package main
 import (
 	"strconv"
 
-	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/cmd/internal/store"
+	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,6 +14,21 @@ type todoCreatePayload struct {
 	Completed bool   `json:"completed"`
 }
 
+// getTodosHandler godoc
+//
+//	@Summary		Get Todos
+//	@Description	Returns a list of todos based on query parameters such as limit, offset, order, and search.
+//	@Accept			json
+//	@Tags			Todos
+//	@Produce		json
+//	@Param			limit	query		int		false	"Number of todos to return (min: 1, max: 100)"	default(10)
+//	@Param			offset	query		int		false	"Number of todos to skip (min: 0)"				default(0)
+//	@Param			order	query		string	false	"Order of the todos (asc or desc)"				default(desc)
+//	@Param			search	query		string	false	"Search term to filter todos by title or description (max length: 100)"
+//	@Success		200		{object}	jsonResponseEnvelope{data=[]store.Todo}
+//	@Failure		400		{object}	jsonErrorResponseEnvelope
+//	@Failure		500		{object}	jsonErrorResponseEnvelope
+//	@Router			/todos [get]
 func (app *application) getTodosHandler(c *gin.Context) {
 
 	payload := store.TodosQueryParams{
@@ -35,6 +50,18 @@ func (app *application) getTodosHandler(c *gin.Context) {
 	app.jsonOkResponse(c, todos)
 }
 
+// createTodoHandler godoc
+//
+//	@Summary		Create Todo
+//	@Description	Creates a new todo item.
+//	@Accept			json
+//	@Tags			Todos
+//	@Produce		json
+//	@Param			payload	body		todoCreatePayload	true	"Todo item to be created"
+//	@Success		200		{object}	jsonResponseEnvelope{data=store.Todo}
+//	@Failure		400		{object}	jsonErrorResponseEnvelope
+//	@Failure		500		{object}	jsonErrorResponseEnvelope
+//	@Router			/todos [post]
 func (app *application) createTodoHandler(c *gin.Context) {
 
 	var payload todoCreatePayload
@@ -66,6 +93,20 @@ type todoUpdatePayload struct {
 	Completed *bool   `json:"completed" binding:"omitempty"`
 }
 
+// updateTodoHandler godoc
+//
+//	@Summary		Update Todo
+//	@Description	Updates an existing todo item by its ID.
+//	@Tags			Todos
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int64				true	"ID of the todo to update"
+//	@Param			body	body		todoUpdatePayload	true	"Todo update payload"
+//	@Success		200		{object}	jsonResponseEnvelope{data=store.Todo}
+//	@Failure		400		{object}	jsonErrorResponseEnvelope
+//	@Failure		404		{object}	jsonErrorResponseEnvelope
+//	@Failure		500		{object}	jsonErrorResponseEnvelope
+//	@Router			/todos/{id} [put]
 func (app *application) updateTodoHandler(c *gin.Context) {
 
 	todo := getTodoFromCtx(c)
@@ -96,6 +137,17 @@ func (app *application) updateTodoHandler(c *gin.Context) {
 	app.jsonOkResponse(c, todo)
 }
 
+// deleteTodoHandler godoc
+//
+//	@Summary		Delete Todo
+//	@Description	Deletes a todo item by its ID.
+//	@Tags			Todos
+//	@Produce		json
+//	@Param			id	path		int64	true	"ID of the todo to delete"
+//	@Success		200	{object}	jsonResponseEnvelope{data=store.Todo}
+//	@Failure		404	{object}	jsonErrorResponseEnvelope
+//	@Failure		500	{object}	jsonErrorResponseEnvelope
+//	@Router			/todos/{id} [delete]
 func (app *application) deleteTodoHandler(c *gin.Context) {
 	todo := getTodoFromCtx(c)
 
@@ -108,6 +160,17 @@ func (app *application) deleteTodoHandler(c *gin.Context) {
 	app.jsonOkResponse(c, todo)
 }
 
+// getTodoHandler godoc
+//
+//	@Summary		Get Todo
+//	@Description	Returns a todo item by its ID.
+//	@Tags			Todos
+//	@Produce		json
+//	@Param			id	path		int64	true	"ID of the todo to retrieve"
+//	@Success		200	{object}	jsonResponseEnvelope{data=store.Todo}
+//	@Failure		404	{object}	jsonErrorResponseEnvelope
+//	@Failure		500	{object}	jsonErrorResponseEnvelope
+//	@Router			/todos/{id} [get]
 func (app *application) getTodoHandler(c *gin.Context) {
 	app.jsonOkResponse(c, getTodoFromCtx(c))
 }

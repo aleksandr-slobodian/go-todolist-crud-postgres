@@ -25,6 +25,7 @@ This is a simple CRUD (Create, Read, Update, Delete) application built in Go usi
 - [Gin Web Framework](https://github.com/gin-gonic/gin)
 - [PostgreSql](https://www.postgresql.org/)
 - [Docker](https://docs.docker.com/get-docker/)
+- [Swagger](https://swagger.io/tools/swagger-ui/)
 
 ### Installation
 
@@ -55,13 +56,21 @@ This is a simple CRUD (Create, Read, Update, Delete) application built in Go usi
    make migrate-up
    ```
 
-5. **Run the application**:
+5. **Install swag**:
+
+   [Swag](https://github.com/swaggo/swag?tab=readme-ov-file#getting-started)
+
+6. **Run the application**:
 
    with [Air - Live reload](https://github.com/air-verse/air):
 
    ```bash
    air
    ```
+
+7. **Run the Swagger UI**:
+
+   http://localhost:8181/v1/swagger/index.html
 
 ### Usage
 
