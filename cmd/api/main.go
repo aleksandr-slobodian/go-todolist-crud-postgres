@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/db"
 	"github.com/aleksandr-slobodian/go-todolist-crud-postgres/internal/env"
@@ -11,6 +12,7 @@ import (
 type application struct {
 	config config
 	store store.Storage
+	logger *log.Logger
 }
 
 type config struct {
@@ -69,6 +71,7 @@ func main() {
 	app := 	&application{
 		config: cfg,
 		store: store,
+		logger: log.New(os.Stdout, "APP ", log.LstdFlags),
 	}
 
 	mux := app.mount()

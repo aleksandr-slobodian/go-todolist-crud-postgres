@@ -17,7 +17,9 @@ func (app *application) mount() http.Handler {
 	docs.SwaggerInfo.Version = app.config.version
 	docs.SwaggerInfo.Host = app.config.apiURL
 	docs.SwaggerInfo.BasePath = "/v1"
-	r.Use(gin.Logger())
+	if gin.Mode() != gin.TestMode {
+		r.Use(gin.Logger())
+	}
 	r.Use(gin.Recovery())
 	r.Use(app.errorHandler())
 

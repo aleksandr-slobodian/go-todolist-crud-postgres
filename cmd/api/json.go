@@ -6,6 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type jsonResponseEnvelopeStrict[T any] struct {
+	Data T `json:"data"`
+}
 type jsonResponseEnvelope struct {
 	Data any `json:"data"`
 }
