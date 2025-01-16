@@ -11,7 +11,7 @@ import (
 
 func TestGetTodoByID(t *testing.T) {
 
-	app := newTestApplication(t);
+	app := newTestApplication(t)
 	router := app.mount()
 
 	mockTodos := app.store.Todos.(*store.MockTodos)
@@ -80,7 +80,7 @@ func TestGetTodoByID(t *testing.T) {
 
 func TestCreateTodo(t *testing.T) {
 
-	app := newTestApplication(t);
+	app := newTestApplication(t)
 	router := app.mount()
 
 	mockTodos := app.store.Todos.(*store.MockTodos)
@@ -129,7 +129,7 @@ func TestCreateTodo(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 
-		assert.Contains(t, w.Body.String(), "json param validation failed", "completed",)
+		assert.Contains(t, w.Body.String(), "json param validation failed", "completed")
 	})
 
 	t.Run("successfuly", func(t *testing.T) {
@@ -163,6 +163,108 @@ func TestCreateTodo(t *testing.T) {
 
     mockTodos.AssertExpectations(t)
 })
+
+}
+
+func TestUpdateTodoHandler(t *testing.T) {
+
+	app := newTestApplication(t)
+	router := app.mount()
+	mockTodos := app.store.Todos.(*store.MockTodos)
+
+	expectedTodo := &store.Todo{
+		ID:        0,
+		Item:      "Test Todo",
+		Completed: false,
+		CreatedAt: "",  
+		UpdatedAt: "",
+		UserID:    1, 
+	}
+
+	t.Run("not found", func(t *testing.T) {
+		mockTodos.On("GetByID", context.Background(), int64(99)).Return(&store.Todo{}, store.ErrNotFound)
+		w := executeRequest(t, router, "PATCH", "/v1/todos/99", nil)	
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		assert.Contains(t, w.Body.String(), "not found")
+
+		mockTodos.AssertExpectations(t)
+	})
+
+	mockTodos.On("GetByID", context.Background(), int64(1)).Return(expectedTodo, nil)
+
+	t.Run("request body is empty", func(t *testing.T) {
+		w := executeRequest(t, router, "PATCH", "/v1/todos/1", "")
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		assert.Contains(t, w.Body.String(), "request body is empty")
+	})
+
+	t.Run("bad request, Item is too short", func(t *testing.T) {
+
+		itemText := "w"
+		payload := todoUpdatePayload{
+			Item: &itemText,
+		}
+		w := executeRequest(t, router, "PATCH", "/v1/todos/1", payload)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		assert.Contains(t, w.Body.String(), "json param validation failed", "Item", "min")
+	})
+
+	t.Run("bad request, Item is too long", func(t *testing.T) {
+		itenText := "This is the item with more than 100 characters. It is used to demonstrate how to create an item that exceeds the 100 character limit and still maintains clarity and readability."
+		payload := todoUpdatePayload{
+			Item: &itenText,
+		}
+		w := executeRequest(t, router, "PATCH", "/v1/todos/1", payload)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		assert.Contains(t, w.Body.String(), "json param validation failed", "Item", "max")
+	})
+
+	t.Run("bad request, Completed is not a boolean", func(t *testing.T) {
+		w := executeRequest(t, router, "PATCH", "/v1/todos/1", `{"completed":"df"}`)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		assert.Contains(t, w.Body.String(), "json param validation failed", "completed")
+	})
+
+	t.Run("successfuly", func(t *testing.T) {
+
+		
+		
+		expectedResponse := jsonResponseEnvelopeStrict[*store.Todo]{
+			Data: expectedTodo,
+		}
+
+		testItem := "Test Todo"
+		testCompleted := false
+		payload := todoUpdatePayload{
+				Item:      &testItem,  
+				Completed: &testCompleted,      
+		}
+
+		mockTodos.On("Update", context.Background(), &store.Todo{
+			Item:      testItem,
+			Completed: testCompleted,
+			UserID:    1,
+		}).Return(nil) 
+
+		w := executeRequest(t, router, "PATCH", "/v1/todos/1", payload)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		checkJSONResponse(t, w, expectedResponse)
+
+    mockTodos.AssertExpectations(t)
+
+	})
 
 }
 
