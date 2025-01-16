@@ -1,10 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -38,8 +38,10 @@ func (app *application) errorHandler() gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, err)
 			}
 				// TODO: Implement logger
-			r := c.Request
-			log.Printf("Error ==> method: %s path: %s message: %s", r.Method, r.URL.Path, c.Errors.Last().Error())
+				if app.logger != nil {
+					r := c.Request
+					app.logger.Printf("Error ==> method: %s path: %s message: %s", r.Method, r.URL.Path, c.Errors.Last().Error())
+				}
 		}
 	}
 }
@@ -122,6 +124,15 @@ func (app *application) parseValidationError(err error, errType string) error {
 			"%s validation failed, '%s' is not a valid number",
 			errType,
 			numError.Num,
+		)
+	}
+	if jsonError, ok := err.(*json.UnmarshalTypeError); ok {
+		return fmt.Errorf(
+			"%s validation failed, cannot unmarshal value '%v' into field '%s' of type %s",
+			errType,
+			jsonError.Value,
+			jsonError.Field,
+			jsonError.Type,
 		)
 	}
 	return fmt.Errorf("an unknown validation error occurred")
